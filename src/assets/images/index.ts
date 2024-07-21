@@ -29,7 +29,33 @@ const FriendsImg = require('./friendsImage.jpeg');
 const SettingImg = require('./settingImg.jpeg');
 const coin = require('./coin.jpeg');
 const info = require('./info.jpeg');
+const back = require('./back.png');
+const downChevron = require('./down-chevron.png');
+const UserPlus = require('./new-account.png');
+const More = require('./more.png');
+const Refresh = require('./refresh.png');
+const Copy = require('./copy.png');
+const GiftImgOne = require('./giftOne.jpeg');
+const GiftImgTwo = require('./giftTwo.jpeg');
+const CoinImgTwo = require('./coinTwo.jpeg');
+const GlowCoinImgTwo = require('./coinGlowBg.jpeg');
+const XImg = require('./x.jpeg');
+const YoutubeImg = require('./youtube.jpeg');
+const TelegramImg = require('./telegram.jpeg');
+const EarnHamsImg = require('./earnScreenHam.jpeg');
+const LeftChevronImg = require('./arrowLeft.jpeg');
+const ActiveChevronImg = require('./chevronActive.jpeg');
+const CalendarImg = require('./calendar.jpeg');
+const InviteImg = require('./invite.jpeg');
 export {
+  XImg,
+  TelegramImg,
+  EarnHamsImg,
+  LeftChevronImg,
+  ActiveChevronImg,
+  InviteImg,
+  CalendarImg,
+  YoutubeImg,
   img1,
   hamsterBook,
   SliderImg,
@@ -61,4 +87,14 @@ export {
   SettingImg,
   coin,
   info,
+  back,
+  downChevron,
+  UserPlus,
+  More,
+  Refresh,
+  Copy,
+  GiftImgTwo,
+  GiftImgOne,
+  GlowCoinImgTwo,
+  CoinImgTwo,
 };

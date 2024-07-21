@@ -39,14 +39,10 @@ import Animated, {
   withTiming,
   withRepeat,
   runOnJS,
-  withSpring,
 } from 'react-native-reanimated';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {TapText} from './common/Texts';
 interface Props {
   // Define your props here
 }
@@ -60,18 +56,21 @@ const DashBoard: React.FC<Props> = props => {
   const [levelCount, setLevelCount] = useState(1);
   const [task, setTask] = useState(1);
   const scale = useSharedValue(1);
-  const color = useSharedValue(0);
   const opacity = useSharedValue(1);
   const touched = useSharedValue<boolean>(false);
   const [numberIncrement, setNumberIncrement] = useState(1);
-  const [removingText, setRemovingText] = useState(false);
   const [powerCount, setPowerCount] = useState(1000);
-  const [taps, setTaps] = useState([]);
+  const [taps, setTaps] = useState<never[]>([]);
   const x = useSharedValue(0);
   const y = useSharedValue(0);
+  const [claimed, setClaimed] = useState(false);
+  const [cypherClaimed, setCypherClaimed] = useState(false);
+  const [comboClaimed, setComboClaimed] = useState(false);
+  const translateY = useSharedValue(0);
+  // const opacity = useSharedValue(0);
   const myFunction = () => {
     setCount(count + numberIncrement);
-    saveToLocalStorage(count);
+    saveToLocalStorage({count: count, task: task, claimed: claimed});
     if (powerCount <= 1) {
       return;
     } else {
@@ -81,7 +80,6 @@ const DashBoard: React.FC<Props> = props => {
   useEffect(() => {
     const interval = setInterval(() => {
       setPowerCount(prevNumber => {
-        console.log(prevNumber < 1000)
         if (prevNumber < 1000) {
           return prevNumber + 3;
         } else {
@@ -94,33 +92,82 @@ const DashBoard: React.FC<Props> = props => {
     // Cleanup the interval on component unmount
     return () => clearInterval(interval);
   }, [powerCount]);
-  const getTaps = event => {
-    const newTap = {x: event.x, y: event.y, id: Math.random()};
-    setTaps(prevTaps => [...prevTaps, newTap]);
+  useEffect(() => {
+    const fetchNextClaimTime = async () => {
+      const nextTime = await getNextClaimTime();
+      setNextClaimTime(nextTime);
+    };
+
+    fetchNextClaimTime();
+  }, []);
+  const formatTime = date => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
+  const storeLastClaimTime = async () => {
+    try {
+      const currentTime = new Date().getTime();
+      await AsyncStorage.setItem('lastClaimTime', currentTime.toString());
+    } catch (error) {
+      console.error('Error storing last claim time:', error);
+    }
+  };
+  const getLastClaimTime = async () => {
+    try {
+      const lastClaimTime = await AsyncStorage.getItem('lastClaimTime');
+      return lastClaimTime ? parseInt(lastClaimTime, 10) : null;
+    } catch (error) {
+      console.error('Error retrieving last claim time:', error);
+      return null;
+    }
+  };
+  const getNextClaimTime = async () => {
+    const lastClaimTime = await getLastClaimTime();
+    if (!lastClaimTime) {
+      return null;
+    }
+
+    const nextClaimTime = new Date(lastClaimTime + 24 * 60 * 60 * 1000); // 24 hours later
+    return nextClaimTime;
+  };
+  const [nextClaimTime, setNextClaimTime] = useState(null);
+
+  const timeUntilNextClaim = new Date(nextClaimTime - new Date());
+  const formattedTime = formatTime(timeUntilNextClaim);
+  const getTaps = event => {
+    const newTap = {x: event.x, y: event.y, id: Date.now() + Math.random()};
+    setTaps(prevTaps => [...prevTaps, newTap]);
+    // Set a timer to remove the tap after 1 second
+    setTimeout(() => {
+      removeTap(newTap.id);
+    }, 1000);
+  };
+  const removeTap = id => {
+    setTaps(prevTaps =>
+      prevTaps.map(tap => (tap.id === id ? {...tap, removing: true} : tap)),
+    );
+
+    // Remove the tap from the state after the animation duration
+    setTimeout(() => {
+      setTaps(prevTaps => prevTaps.filter(tap => tap.id !== id));
+    }, 500);
+  };
+
   useEffect(() => {
     const fetchCoins = async () => {
       try {
         const savedCoinCoutn = await AsyncStorage.getItem('ceo-coins');
         const number = JSON.parse(savedCoinCoutn);
-        setCount(number);
-        console.log(savedCoinCoutn, '=========');
+        setCount(number.count);
+        setTask(number.task);
+        setClaimed(number.claimed);
       } catch (err) {}
     };
 
     // Call the fetchCoins function when the component mounts
     fetchCoins();
   }, []);
-  console.log(count, 'cccccc');
-  useEffect(() => {
-    if (taps.length > 0) {
-      const timer = setTimeout(() => {
-        setTaps(prevTaps => prevTaps.slice(1));
-        setRemovingText(true);
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [taps]);
   const tap = Gesture.Tap()
     .onBegin(event => {
       touched.value = true;
@@ -138,11 +185,6 @@ const DashBoard: React.FC<Props> = props => {
       touched.value = false;
     });
 
-  const animatedTextStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{translateX: x.value}, {translateY: y.value}],
-    };
-  });
   useEffect(() => {
     scale.value = withRepeat(
       withTiming(1.2, {
@@ -169,12 +211,32 @@ const DashBoard: React.FC<Props> = props => {
       opacity: opacity.value,
     };
   });
-  const animatedStyles = useAnimatedStyle(() => ({
-    backgroundColor: touched.value ? '#FFE04B' : '#B58DF1',
-    transform: [{scale: withTiming(touched.value ? 1.2 : 1)}],
-  }));
+  useEffect(() => {
+    if (taps.length > 0) {
+      translateY.value = withTiming(-20, {duration: 500});
+      // setTaps(prevTaps => prevTaps.slice(1));
+    }
+  }, [taps, translateY]);
+
   const saveToLocalStorage = async (items: any) => {
     AsyncStorage.setItem('ceo-coins', JSON.stringify(items));
+  };
+  const handleClaimReward = async () => {
+    // Save the current claim time
+    if (!nextClaimTime) {
+      await storeLastClaimTime();
+      const nextTime = await getNextClaimTime();
+      setNextClaimTime(nextTime);
+      setCount(count + 500);
+      setClaimed(true);
+      if (task === 11) {
+        return;
+      } else {
+        console.log('000000');
+        setTask(task + 1);
+        saveToLocalStorage({count: count, task: task, claimed: claimed});
+      }
+    }
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -210,17 +272,7 @@ const DashBoard: React.FC<Props> = props => {
               />
             </View>
           </View>
-          <View
-            style={{
-              backgroundColor: '#3A372B',
-              width: '55%',
-              height: 40,
-              borderRadius: 20,
-              padding: 5,
-              flexDirection: 'row',
-              justifyContent: 'space-evenly',
-              marginLeft: 20,
-            }}>
+          <View style={styles.block}>
             <Image source={Hams} style={{width: 23, height: 23, top: 5}} />
             <View
               style={{
@@ -265,14 +317,7 @@ const DashBoard: React.FC<Props> = props => {
       </View>
 
       <View style={styles.shadow} />
-      <View
-        style={{
-          height: '97%',
-          backgroundColor: '#1D1F24',
-          borderTopLeftRadius: 30,
-          borderTopRightRadius: 30,
-          top: '3%',
-        }}>
+      <View style={styles.view}>
         <View>
           <View
             style={{
@@ -283,7 +328,7 @@ const DashBoard: React.FC<Props> = props => {
             }}>
             <View
               style={
-                newDayReward
+                claimed
                   ? styles.rewardStyle
                   : {
                       alignItems: 'center',
@@ -291,26 +336,29 @@ const DashBoard: React.FC<Props> = props => {
                       marginRight: 20,
                     }
               }>
-              <Pressable
-                style={styles.card}
-                onPress={() => {
-                  if (task === 11) {
-                    return;
-                  } else {
-                    setTask(task + 1);
-                  }
-                }}>
+              <Pressable style={styles.card} onPress={handleClaimReward}>
                 <View style={{top: 10}}>
                   <View style={{width: 100, bottom: 5}}>
-                    <Animated.View style={[styles.box, animatedStyle]} />
+                    <Animated.View
+                      style={[!claimed && styles.box, animatedStyle]}
+                    />
                     <Image
                       source={rewardImage}
                       style={{width: 40, height: 40, alignSelf: 'center'}}
                     />
                   </View>
                   <Text
-                    style={{color: 'white', fontSize: 10, textAlign: 'center'}}>
+                    style={{
+                      color: 'white',
+                      fontSize: 10,
+                      textAlign: 'center',
+                      bottom: 5,
+                    }}>
                     Daily Reward
+                  </Text>
+                  <Text
+                    style={{color: 'white', fontSize: 10, textAlign: 'center'}}>
+                    {formattedTime}
                   </Text>
                 </View>
               </Pressable>
@@ -328,7 +376,9 @@ const DashBoard: React.FC<Props> = props => {
               <View style={styles.card}>
                 <View style={{top: 10}}>
                   <View style={{width: 100, bottom: 5}}>
-                    <Animated.View style={[styles.box, animatedStyle]} />
+                    <Animated.View
+                      style={[!cypherClaimed && styles.box, animatedStyle]}
+                    />
                     <Image
                       source={cypherImage}
                       style={{width: 40, height: 40, alignSelf: 'center'}}
@@ -354,7 +404,9 @@ const DashBoard: React.FC<Props> = props => {
               <View style={styles.card}>
                 <View style={{top: 10}}>
                   <View style={{width: 100, bottom: 5}}>
-                    <Animated.View style={[styles.box, animatedStyle]} />
+                    <Animated.View
+                      style={[!comboClaimed && styles.box, animatedStyle]}
+                    />
                     <Image
                       source={comboImage}
                       style={{width: 40, height: 40, alignSelf: 'center'}}
@@ -377,68 +429,29 @@ const DashBoard: React.FC<Props> = props => {
             </View>
           </View>
           {/* Tap block */}
-          {touched.value && (
-            <View
-              style={{
-                alignSelf: 'center',
-                bottom: 0,
-                zIndex: 4,
-                position: 'absolute',
-              }}>
-              <Text style={{color: 'white', fontSize: 16, fontWeight: '600'}}>
-                {numberIncrement}
-              </Text>
-            </View>
-          )}
+
           <View style={{backgroundColor: 'red'}}>
             <GestureDetector gesture={tap}>
               <Animated.View
                 style={{alignSelf: 'center', backgroundColor: 'red'}}>
-                {/* <Animated.Text
-                style={[
-                  {color: 'white', fontSize: 16, fontWeight: '600', zIndex: 4},
-                  animatedTextStyle,
-                ]}>
-                Tap here
-              </Animated.Text> */}
-                {taps.map(tap => (
-                  <Animated.Text
-                    key={tap.id}
-                    style={[
-                      {
-                        color: 'white',
-                        fontSize: 16,
-                        fontWeight: '600',
-                        zIndex: 1,
-                        position: 'absolute',
-                      },
-                      {left: tap.x, top: tap.y},
-                    ]}>
-                    +1
-                  </Animated.Text>
-                ))}
-                <Image
-                  source={RoundImg}
-                  style={{
-                    width: 250,
-                    height: 250,
-                    alignSelf: 'center',
-                    top: 20,
-                  }}
-                />
+                {taps.map(tap => {
+                  translateY.value = tap.y;
+                  return (
+                    <TapText
+                      key={tap.id}
+                      x={tap.x}
+                      y={tap.y}
+                      removing={tap.removing}
+                      plusTap={numberIncrement}
+                    />
+                  );
+                })}
+                <Image source={RoundImg} style={styles.roundImg} />
               </Animated.View>
             </GestureDetector>
           </View>
           {/* Booster block */}
-          <View
-            style={{
-              // marginLeft: 25,
-
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              marginTop: 40,
-              marginBottom: 10,
-            }}>
+          <View style={styles.boost}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Image source={Powermage} style={{width: 40, height: 40}} />
               <Text style={[styles.title, {marginLeft: 5, fontWeight: '600'}]}>
@@ -452,105 +465,6 @@ const DashBoard: React.FC<Props> = props => {
                 Boost
               </Text>
             </View>
-          </View>
-          {/* footer block */}
-          <View
-            style={{
-              backgroundColor: '#272A2F',
-              borderRadius: 20,
-              width: '85%',
-              height: 65,
-              alignSelf: 'center',
-              flexDirection: 'row',
-              padding: 5,
-              justifyContent: 'space-evenly',
-            }}>
-            <Pressable
-              style={[
-                styles.selectedView,
-                {
-                  backgroundColor:
-                    pressed === 'exchange' ? '#1D1F24' : '#272A2F',
-                },
-              ]}
-              onPress={() => setPressed('exchange')}>
-              {pressed === 'exchange' ? (
-                <Image source={HamsterCutoff} style={{width: 30, height: 30}} />
-              ) : (
-                <Image source={PressedHams} style={{width: 26, height: 26}} />
-              )}
-              <Text style={styles.footerText}>Exchange</Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.selectedView,
-                {backgroundColor: pressed === 'mine' ? '#1D1F24' : '#272A2F'},
-              ]}
-              onPress={() => setPressed('mine')}>
-              {pressed === 'mine' ? (
-                <Image source={HammerPressed} style={{width: 29, height: 29}} />
-              ) : (
-                <Image
-                  source={HammerUnPressed}
-                  style={{width: 30, height: 30}}
-                />
-              )}
-              <Text style={styles.footerText}>Mine</Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.selectedView,
-                {
-                  backgroundColor:
-                    pressed === 'friends' ? '#1D1F24' : '#272A2F',
-                },
-              ]}
-              onPress={() => setPressed('friends')}>
-              {pressed === 'friends' ? (
-                <Image
-                  source={SelectedFriendsImg}
-                  style={{width: 30, height: 30}}
-                />
-              ) : (
-                <Image source={FriendsImg} style={{width: 29, height: 29}} />
-              )}
-              <Text style={styles.footerText}>Friends</Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.selectedView,
-                {backgroundColor: pressed === 'earn' ? '#1D1F24' : '#272A2F'},
-              ]}
-              onPress={() => setPressed('earn')}>
-              {pressed === 'earn' ? (
-                <Image
-                  source={PressedEarnImage}
-                  style={{width: 33, height: 29}}
-                />
-              ) : (
-                <Image source={EarnImage} style={{width: 30, height: 30}} />
-              )}
-              <Text style={styles.footerText}>Earn</Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.selectedView,
-                {
-                  backgroundColor:
-                    pressed === 'airdrop' ? '#1D1F24' : '#272A2F',
-                },
-              ]}
-              onPress={() => setPressed('airdrop')}>
-              {pressed === 'airdrop' ? (
-                <Image
-                  source={SelectedAirdropImg}
-                  style={{width: 29, height: 29}}
-                />
-              ) : (
-                <Image source={AirdropImg} style={{width: 27, height: 27}} />
-              )}
-              <Text style={styles.footerText}>Exchange</Text>
-            </Pressable>
           </View>
         </View>
       </View>
@@ -578,7 +492,7 @@ const styles = StyleSheet.create({
   rewardStyle: {
     width: 110,
     height: 90,
-    backgroundColor: 'transparent',
+    backgroundColor: '#5b9362',
     borderTopWidth: 1,
 
     borderWidth: 0.6,
@@ -608,7 +522,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9BA48',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    top: '21.1%',
+    top: '22.4%',
     width: '98%',
     shadowColor: '#E9BA48',
     shadowOffset: {width: 0, height: -16},
@@ -625,6 +539,53 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   circle: {},
+  viewContainer: {
+    backgroundColor: '#272A2F',
+    borderRadius: 20,
+    width: '85%',
+    height: 65,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    padding: 5,
+    justifyContent: 'space-evenly',
+  },
+  boost: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 40,
+    marginBottom: 10,
+  },
+  animatedText: {
+    color: 'white',
+    fontSize: 19,
+    fontWeight: '800',
+    zIndex: 1,
+    position: 'absolute',
+  },
+  roundImg: {
+    width: 250,
+    height: 250,
+    alignSelf: 'center',
+    top: 20,
+  },
+  view: {
+    height: '97%',
+    backgroundColor: '#1D1F24',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    top: '3%',
+  },
+
+  block: {
+    backgroundColor: '#3A372B',
+    width: '55%',
+    height: 40,
+    borderRadius: 20,
+    padding: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginLeft: 20,
+  },
 });
 
 export default DashBoard;
