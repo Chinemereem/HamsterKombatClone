@@ -430,10 +430,9 @@ const DashBoard: React.FC<Props> = props => {
           </View>
           {/* Tap block */}
 
-          <View style={{backgroundColor: 'red'}}>
+          <View style={{}}>
             <GestureDetector gesture={tap}>
-              <Animated.View
-                style={{alignSelf: 'center', backgroundColor: 'red'}}>
+              <Animated.View style={{alignSelf: 'center'}}>
                 {taps.map(tap => {
                   translateY.value = tap.y;
                   return (

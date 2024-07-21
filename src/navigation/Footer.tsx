@@ -1,12 +1,5 @@
 import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Image,
-  Dimensions,
-} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
 import {
   AirdropImg,
   EarnImage,
@@ -19,7 +12,6 @@ import {
   SelectedAirdropImg,
   SelectedFriendsImg,
 } from '../assets/images';
-import {useNavigation} from '@react-navigation/native';
 import EarnScreen from '../screens/Home/EarnScreen';
 import ExchangeScreen from '../screens/Home/Exchange';
 import FriendsScreen from '../screens/Home/Friends';
@@ -142,7 +134,7 @@ const Footer: React.FC<Props> = props => {
                 setPressed('airdrop');
                 setShowAirDropScreen(true);
                 setShowEarnScreen(false);
-               
+
                 setShowFriendsScreen(false);
               }}>
               {pressed === 'airdrop' ? (
