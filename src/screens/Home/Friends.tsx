@@ -146,7 +146,7 @@ const FriendsScreen: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    // position: 'absolute',
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height - 86,
     backgroundColor: '#000000',

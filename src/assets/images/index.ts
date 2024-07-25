@@ -47,6 +47,12 @@ const LeftChevronImg = require('./arrowLeft.jpeg');
 const ActiveChevronImg = require('./chevronActive.jpeg');
 const CalendarImg = require('./calendar.jpeg');
 const InviteImg = require('./invite.jpeg');
+const CalendarWithBg = require('./calendarWithBg.png');
+const speechBubble = require('./speech-bubble.png');
+const EarnCoin = require('./earn-coin.jpeg');
+const Check = require('./check.png');
+const Checked = require('./checked.png');
+
 export {
   XImg,
   TelegramImg,
@@ -97,4 +103,9 @@ export {
   GiftImgOne,
   GlowCoinImgTwo,
   CoinImgTwo,
+  CalendarWithBg,
+  speechBubble,
+  EarnCoin,
+  Check,
+  Checked,
 };

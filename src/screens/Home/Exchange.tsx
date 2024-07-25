@@ -26,7 +26,7 @@ const ExchangeScreen: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+  
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height - 86,
     backgroundColor: 'gray',

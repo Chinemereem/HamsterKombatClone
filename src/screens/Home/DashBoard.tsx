@@ -8,22 +8,12 @@ import {
   Pressable,
 } from 'react-native';
 import {
-  AirdropImg,
   BoostImage,
   CoinImg,
-  EarnImage,
-  FriendsImg,
-  HammerPressed,
-  HammerUnPressed,
   Hams,
-  HamsterCutoff,
   HamsterUserIcon,
   Powermage,
-  PressedEarnImage,
-  PressedHams,
   RoundImg,
-  SelectedAirdropImg,
-  SelectedFriendsImg,
   SettingImg,
   coin,
   comboImage,
@@ -49,7 +39,6 @@ interface Props {
 
 const DashBoard: React.FC<Props> = props => {
   const [count, setCount] = useState(0);
-  const [pressed, setPressed] = useState('exchange');
   const [profit, setProfit] = useState(0);
   const [newDayReward, setNewDayReward] = useState(false);
   const [level, setLevel] = useState('Bronze');

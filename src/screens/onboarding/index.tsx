@@ -1,12 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Button,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import {
   SliderImg,
   SliderImg4,
@@ -24,11 +17,12 @@ import EllipticalPagination from '../common/pagination';
 import {useNavigation} from '@react-navigation/native';
 interface Props {
   // Define your props here
+  close: () => void;
 }
 
 const Onboard: React.FC<Props> = props => {
   const refRBSheet = useRef(null);
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   useEffect(() => {
     if (refRBSheet.current) {
       refRBSheet.current?.open();
@@ -48,7 +42,7 @@ const Onboard: React.FC<Props> = props => {
       setPage(6);
     } else if (page === 6) {
       refRBSheet.current?.close();
-      navigation.navigate('Home');
+      props.close();
     }
     // else {
     //   setPage(1);
@@ -118,6 +112,8 @@ const Onboard: React.FC<Props> = props => {
 
       <BottomOverlay
         ref={refRBSheet}
+        closeOnPressBack={false}
+        closeOnPressMask={false}
         customStyles={{
           wrapper: {
             backgroundColor: 'transparent',

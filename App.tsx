@@ -13,8 +13,8 @@ import Footer from './src/navigation/Footer';
 function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView style={{flex: 1}}>
-        <MyStack />
+      <GestureHandlerRootView style={{flex: 1, backgroundColor: '#1D1F24'}}>
+        {/* <MyStack /> */}
         <Footer />
       </GestureHandlerRootView>
     </SafeAreaProvider>
