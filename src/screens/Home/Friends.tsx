@@ -123,7 +123,7 @@ const FriendsScreen: React.FC<Props> = props => {
         </View>
         <View
           style={{
-            top: '30%',
+            top: 30,
             flexDirection: 'row',
             justifyContent: 'space-between',
           }}>

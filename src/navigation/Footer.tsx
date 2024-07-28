@@ -87,7 +87,8 @@ const Footer: React.FC<Props> = props => {
           )}
           {showMineScreen && <Mine closeScreen={setShowMineScreen} />}
           {!noBottomTab && (
-            <View style={{height: '10%'}}>
+            <View
+              style={{height: '12%', backgroundColor: '#1D1F24', bottom: 10}}>
               <View style={{top: 6}}>
                 <View style={styles.viewContainer}>
                   <Pressable
@@ -235,7 +236,6 @@ const Footer: React.FC<Props> = props => {
               </View>
             </View>
           )}
-          
         </>
       )}
     </>

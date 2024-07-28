@@ -10,14 +10,18 @@ import {
   View,
   ScrollView,
   ImageBackground,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import {
   ActiveChevronImg,
   CalendarImg,
   CalendarWithBg,
   Check,
+  CloseImg,
   CoinImgTwo,
   EarnCoin,
+  EarnCoin2,
   EarnHamsImg,
   GlowCoinImgTwo,
   InviteImg,
@@ -32,9 +36,18 @@ import {
 } from '../../assets/images';
 import BackgroundButton from './common/Button';
 import Modal from './common/Modal';
-import {FlatList} from 'react-native-gesture-handler';
+
 import {format, isToday} from 'date-fns';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  getConsecutiveDates,
+  getLastClaimTime,
+  getNextClaimTime,
+  storeConsecutiveDates,
+  storeLastClaimTime,
+} from './functions';
+import {Shadow} from 'react-native-shadow-2';
 
 interface Props {
   style?: ViewStyle;
@@ -43,7 +56,16 @@ interface Props {
   noBottomModal?: boolean;
   // Define your props here
 }
-
+const rewards = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+const items = [
+  {id: 1, name: 'Item 1'},
+  {id: 2, name: 'Item 2'},
+  {id: 3, name: 'Item 3'},
+  {id: 4, name: 'Item 4'},
+  {id: 5, name: 'Item 5'},
+  {id: 6, name: 'Item 6'},
+  {id: 7, name: 'Item 7'},
+];
 const EarnScreen: React.FC<Props> = props => {
   // const screenHeight = Dimensions.get('window').height / 1.3;
 
@@ -51,10 +73,51 @@ const EarnScreen: React.FC<Props> = props => {
   const [selected, setSelected] = useState([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [count, setCount] = useState(0);
+  const [task, setTask] = useState(0);
+  const [claimed, setClaimed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [rewardToClaim, setRewardToClaim] = useState(0);
+  const [claimedReward, setClaimedReward] = useState(false);
+  const [nextClaimTime, setNextClaimTime] = useState(null);
+  const [consecutiveDates, setConsecutiveDates] = useState([]);
+
+  const getData = (data: any) => {
+    return data;
+  };
   const handleReward = () => {
     setShowModal(true);
     props.closeBottomTab(true);
   };
+  useEffect(() => {
+    const fetchCoins = async () => {
+      try {
+        const savedCoinCoutn = await AsyncStorage.getItem('ceo-coins');
+        const number = JSON.parse(savedCoinCoutn);
+        setCount(number.count);
+        setTask(number.task);
+        setClaimed(number.claimed);
+        getData(number);
+      } catch (err) {}
+    };
+    const fetchConsecutiveDates = async () => {
+      const dates = await getConsecutiveDates();
+      setConsecutiveDates(dates);
+    };
+    // Call the fetchCoins function when the component mounts
+    fetchCoins();
+    fetchConsecutiveDates();
+  }, []);
+
+  useEffect(() => {
+    const fetchNextClaimTime = async () => {
+      const nextTime = await getNextClaimTime();
+      console.log(nextTime, 'nextTime===');
+      setNextClaimTime(nextTime);
+    };
+
+    fetchNextClaimTime();
+  }, []);
 
   const getNextTenDays = () => {
     const dates = [];
@@ -63,7 +126,6 @@ const EarnScreen: React.FC<Props> = props => {
     for (let i = 0; i < 10; i++) {
       const futureDate = new Date(today);
       futureDate.setDate(today.getDate() + i);
-      console.log(new Date(futureDate), '=========');
       const formattedDate = format(futureDate, 'MMMM, dd, yyy');
       // numDays.push(i);
 
@@ -94,22 +156,163 @@ const EarnScreen: React.FC<Props> = props => {
     return () => clearTimeout(timer);
   }, [showToast]);
   const tenDaysDate = getNextTenDays();
-  console.log(getNextTenDays(), 'nmmmmmmm');
 
-  const handleDayPress = (numDays, index: number) => {
-    // console.log(index, numDays);
+  const mappedDates = tenDaysDate.map(({date, futureDate, numDays}, index) => {
+    const todaysClaim = isToday(futureDate);
+    return {todaysClaim, index};
+  });
 
-    // if (index === 0) {
-    //   return;
-    // } else {
-    //   setSelected(numDays);
-    //   setShowText(!showText)
-    // }
+  const todatsIndex = mappedDates.findIndex(item => item.todaysClaim);
+  const tc = tenDaysDate.find(({futureDate}) => isToday(futureDate));
+
+  const renderItems = () => {
+    const rows = [];
+    for (let i = 0; i < tenDaysDate.length; i += 4) {
+      const rowItems = tenDaysDate.slice(i, i + 4);
+      rows.push(
+        <View key={i} style={styles.row}>
+          {rowItems.map(({date, futureDate, numDays}, index) => {
+            const rewardIndex = numbers[i + index];
+            return (
+              <Pressable
+                style={[
+                  styles.backgroundViewStyle,
+                  isToday(futureDate) && {
+                    borderColor: '#5B9362',
+                    borderWidth: 1,
+                    backgroundColor: nextClaimTime ? '#4CAB56' : '#272A2F',
+                    opacity: 1,
+                  },
+                ]}
+                key={index}
+                onPress={() =>
+                  handleDayPress(numDays, index, rewardIndex, futureDate)
+                }>
+                <Text
+                  style={{
+                    color: 'white',
+                    textAlign: 'center',
+                    fontWeight: 700,
+                  }}>
+                  Day {num[i + index]}
+                </Text>
+                {selected.includes(numDays) && (
+                  <View style={styles.position}>
+                    <ImageBackground
+                      source={speechBubble}
+                      resizeMode="cover"
+                      style={styles.image}>
+                      <Text style={styles.bubbleText}>{date}</Text>
+                    </ImageBackground>
+                  </View>
+                )}
+                <Image
+                  source={
+                    nextClaimTime && isToday(futureDate) ? EarnCoin2 : EarnCoin
+                  }
+                  style={{width: 35, height: 35, alignSelf: 'center'}}
+                />
+                <Text
+                  style={{
+                    color: 'white',
+                    textAlign: 'center',
+                    fontWeight: 700,
+                  }}>
+                  {rewardIndex}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>,
+      );
+    }
+    return rows;
+  };
+
+  const handleDayPress = (numDays, index: number, rewardIndex, futureDate) => {
     if (selected.includes(numDays)) {
       setSelected(selected.filter(item => item !== numDays));
     } else {
       setSelected([...selected, numDays]);
     }
+  };
+
+  const saveToLocalStorage = async (items: any) => {
+    AsyncStorage.setItem('ceo-coins', JSON.stringify(items));
+  };
+
+  const handleClaimed = async () => {
+    setLoading(true);
+    const lastClaimTime = await getLastClaimTime();
+    const currentTime = new Date().getTime();
+    let daysSinceLastClaim = 0;
+    if (lastClaimTime) {
+      daysSinceLastClaim = Math.floor(
+        (currentTime - lastClaimTime) / (24 * 60 * 60 * 1000),
+      );
+    }
+    let claimedDates = await getConsecutiveDates();
+    const nextTenDays = getNextTenDays();
+    if (daysSinceLastClaim > 1 || claimedDates.length === 0) {
+      // Reset if more than one day has passed since last claim or no dates stored
+      claimedDates = [nextTenDays[0]];
+      await storeConsecutiveDates(claimedDates);
+      setConsecutiveDates(claimedDates);
+      await storeLastClaimTime();
+    } else {
+      // Increment claimed days
+      const nextClaimDate = nextTenDays[claimedDates.length];
+      claimedDates.push(nextClaimDate.futureDate.toISOString());
+      if (claimedDates.length > 10) {
+        claimedDates.shift(); // Keep only the last 10 days
+      }
+      await storeConsecutiveDates(claimedDates);
+      setConsecutiveDates(claimedDates);
+      await storeLastClaimTime();
+    }
+    const nextTime = await getNextClaimTime();
+    setNextClaimTime(nextTime);
+    await saveToLocalStorage({
+      count: count + numbers[todatsIndex],
+      task: task + 1,
+      claimed: true,
+    });
+    if (showModal) {
+      setShowModal(false);
+      props.closeBottomTab(false);
+    } else {
+      props.closeScreen(false);
+    }
+    setShowConfetti(true);
+    setShowToast(true);
+    setLoading(false);
+    // setLoading(true);
+    // try {
+    //   if (tc) {
+    //     await storeLastClaimTime();
+    //     const nextTime = await getNextClaimTime();
+    //     setNextClaimTime(nextTime);
+
+    //     await saveToLocalStorage({
+    //       count: count + numbers[todatsIndex],
+    //       task: task + 1,
+    //       claimed: true,
+    //     });
+    //     setRewardToClaim(count + numbers[todatsIndex]);
+    //     setClaimedReward(true);
+    //     if (showModal) {
+    //       setShowModal(false);
+    //       props.closeBottomTab(false);
+    //     } else {
+    //       props.closeScreen(false);
+    //     }
+    //     setShowConfetti(true);
+    //     setShowToast(true);
+    //   }
+    // } catch {
+    // } finally {
+    //   setLoading(false);
+    // }
   };
   return (
     <SafeAreaView style={[styles.container, props.style]}>
@@ -118,7 +321,7 @@ const EarnScreen: React.FC<Props> = props => {
           style={{
             backgroundColor: '#242529',
             width: '90%',
-            height: 30,
+            height: 35,
             borderRadius: 10,
             alignSelf: 'center',
             padding: 9,
@@ -130,7 +333,13 @@ const EarnScreen: React.FC<Props> = props => {
             zIndex: 20,
           }}>
           <Image source={Check} style={{alignSelf: 'center'}} />
-          <Text style={{fontSize: 10, color: 'white', marginLeft: 5}}>
+          <Text
+            style={{
+              fontSize: 10,
+              color: 'white',
+              marginLeft: 5,
+              alignSelf: 'center',
+            }}>
             Success
           </Text>
         </View>
@@ -159,7 +368,7 @@ const EarnScreen: React.FC<Props> = props => {
           </View>
         </View>
         {/* Image block */}
-        <View style={{height: '95%'}}>
+        <View style={{paddingBottom: 40}}>
           <ScrollView
             style={{paddingBottom: 40}}
             showsVerticalScrollIndicator={false}>
@@ -212,7 +421,7 @@ const EarnScreen: React.FC<Props> = props => {
                 activeChevronImgSourceStyle={{width: 16, height: 16}}
                 leftChevronImg={LeftChevronImg}
                 leftChevronImgStyle={{width: 30, height: 30}}
-                passed
+                passed={nextClaimTime}
               />
               {/* Task List */}
               <View style={{marginTop: 20}}>
@@ -294,95 +503,84 @@ const EarnScreen: React.FC<Props> = props => {
       {showModal && (
         <Modal
           children={
-            <View style={{alignItems: 'center', top: 50}}>
-              {/* <Text>Helllo</Text> */}
-              <View style={styles.imageView}>
-                <Image
-                  source={CalendarWithBg}
-                  style={{width: 100, height: 100}}
-                />
-              </View>
-              <View style={{marginTop: '20%'}} />
-              <Text style={{color: 'white', fontWeight: '600', fontSize: 23}}>
-                Daily reward
-              </Text>
-              <Text
-                style={{
-                  color: 'white',
-                  fontWeight: '600',
-                  textAlign: 'center',
-                  top: 10,
-                }}>
-                Accrue coins for logging into the game daily {'\n'} without
-                skipping
-              </Text>
-              <FlatList
-                data={tenDaysDate}
-                // horizontal
-                numColumns={4}
-                style={{marginTop: 20, height: '50%'}}
-                contentContainerStyle={{
-                  paddingBottom: '20%',
-                }}
-                renderItem={({item: {date, futureDate, numDays}, index}) => {
-                  return (
-                    <Pressable
-                      style={[
-                        styles.backgroundViewStyle,
-                        isToday(futureDate) && {
-                          borderColor: '#5B9362',
-                          borderWidth: 1,
-                        },
-                      ]}
-                      onPress={() => handleDayPress(numDays, index)}>
-                      <Text
-                        style={{
-                          color: 'white',
-                          textAlign: 'center',
-                          fontWeight: 700,
-                        }}>
-                        Day {num[index]}
-                      </Text>
-                      {selected.includes(numDays) && (
-                        <View style={styles.position}>
-                          <ImageBackground
-                            source={speechBubble}
-                            resizeMode="cover"
-                            style={styles.image}>
-                            <Text style={styles.bubbleText}>{date}</Text>
-                          </ImageBackground>
-                        </View>
-                      )}
+            <View style={{alignItems: 'center'}}>
+              <ScrollView
+                style={{height: '80%', paddingBottom: 80, width: '100%'}}
+                showsVerticalScrollIndicator={false}>
+                {/* <Text>Helllo</Text> */}
+                <View
+                  style={{
+                    alignSelf: 'center',
+                    marginTop: 10,
+                    flexDirection: 'row',
+                  }}>
+                  <Shadow distance={15} startColor={'#3A2459'} offset={[0, 4]}>
+                    <View
+                      style={{
+                        borderTopStartRadius: 24,
+                        borderBottomEndRadius: 0,
+                        borderRadius: 10,
+                      }}>
                       <Image
-                        source={EarnCoin}
-                        style={{width: 35, height: 35, alignSelf: 'center'}}
+                        source={CalendarWithBg}
+                        style={{width: 100, height: 100}}
                       />
-                      <Text
-                        style={{
-                          color: 'white',
-                          textAlign: 'center',
-                          fontWeight: 700,
-                        }}>
-                        {numbers[index]}
-                      </Text>
-                    </Pressable>
-                  );
-                }}
-                // style={{width:350,}}
-              />
+                    </View>
+                  </Shadow>
+                  <Pressable
+                    style={{left: 120}}
+                    onPress={() => {
+                      if (showModal) {
+                        setShowModal(false);
+                        props.closeBottomTab(false);
+                      } else {
+                        props.closeScreen(false);
+                      }
+                    }}>
+                    <Image source={CloseImg} style={{width: 25, height: 24}} />
+                  </Pressable>
+                </View>
+
+                <View style={{marginTop: '10%'}} />
+                <Text
+                  style={{
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: 23,
+                    textAlign: 'center',
+                  }}>
+                  Daily reward
+                </Text>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    top: 10,
+                  }}>
+                  Accrue coins for logging into the game daily {'\n'} without
+                  skipping
+                </Text>
+
+                {renderItems()}
+              </ScrollView>
               <Pressable
-                style={[styles.pressable, {width: '90%'}]}
-                onPress={() => {
-                  if (showModal) {
-                    setShowModal(false);
-                    props.closeBottomTab(false);
-                  } else {
-                    props.closeScreen(false);
-                  }
-                  setShowConfetti(true);
-                  setShowToast(true);
-                }}>
-                <Text style={styles.text}>Claim</Text>
+                style={[
+                  styles.pressable,
+                  {
+                    width: '90%',
+                    backgroundColor: nextClaimTime ? '#444547' : '#5a5fff',
+                  },
+                ]}
+                disabled={nextClaimTime}
+                onPress={handleClaimed}>
+                {loading ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text style={styles.text}>
+                    {nextClaimTime ? 'Come back Tomorrow' : 'Claim'}
+                  </Text>
+                )}
               </Pressable>
             </View>
           }
@@ -461,13 +659,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   pressable: {
-    backgroundColor: '#5a5fff',
     width: '70%',
     alignItems: 'center',
     justifyContent: 'center',
     height: 60,
     borderRadius: 15,
     flexDirection: 'row',
+    bottom: 30,
   },
   copyBtn: {
     backgroundColor: '#5a5fff',
@@ -476,6 +674,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 60,
     borderRadius: 15,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 16,
+  },
+  item: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 4,
+    padding: 16,
+    backgroundColor: '#ddd',
   },
   shadow: {
     backgroundColor: '#040300',
@@ -515,15 +726,17 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 5, height: 1},
     shadowOpacity: 3,
     shadowRadius: 10,
+    marginTop: 60,
   },
   backgroundViewStyle: {
     marginTop: 35,
-    backgroundColor: '#272A2F',
     marginLeft: 6,
     width: 80,
     height: 80,
     borderRadius: 12,
     justifyContent: 'center',
+    backgroundColor: '#272A2F',
+    opacity: 0.4,
   },
   position: {
     position: 'absolute',
@@ -544,6 +757,30 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     textAlign: 'center',
     top: 3,
+  },
+  heading: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 13,
+  },
+  card: {
+    backgroundColor: '#4F4220',
+    borderRadius: 8,
+
+    width: 400,
+    height: 30,
+  },
+  elevation: {
+    shadowColor: '#E9BA48',
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+    shadowOpacity: 0.58,
+    shadowRadius: 16.0,
+
+    top: 30,
+    elevation: 24,
   },
 });
 

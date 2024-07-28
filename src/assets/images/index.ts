@@ -52,6 +52,10 @@ const speechBubble = require('./speech-bubble.png');
 const EarnCoin = require('./earn-coin.jpeg');
 const Check = require('./check.png');
 const Checked = require('./checked.png');
+const EarnCoin2 = require('./earn-coin2.png');
+const CloseImg = require('./close.png');
+const CipherImg = require('./cipherImage.jpg');
+const CipherReward = require('./cipherReward.jpg');
 
 export {
   XImg,
@@ -108,4 +112,8 @@ export {
   EarnCoin,
   Check,
   Checked,
+  EarnCoin2,
+  CloseImg,
+  CipherImg,
+  CipherReward,
 };
