@@ -56,6 +56,22 @@ const EarnCoin2 = require('./earn-coin2.png');
 const CloseImg = require('./close.png');
 const CipherImg = require('./cipherImage.jpg');
 const CipherReward = require('./cipherReward.jpg');
+const LoadImage = require('./loadim.jpeg');
+const BoostImg2 = require('./boost-img2.jpg');
+const DimBoost = require('./dim-boost.jpg');
+const CoinBoost = require('./coin-boost.jpg');
+const PowerTap = require('./power-tap.jpg');
+const BatterImg = require('./battery.jpg');
+const BoostImg = require('./boost-img.jpg');
+const ModalCoinImg = require('./modal-coin.jpg');
+const ModalPowerTapImg = require('./modal-power-tap.jpg');
+const ModalBatteryImg = require('./modal-battery.jpg');
+const dissabledCoinImg = require('./dissabledCoinImg.jpeg');
+const TonBgImg = require('./top-bg.jpg');
+const walletImg = require('./wallet.jpg');
+const ModalLockImg = require('./modal-lock.jpg');
+const LockImg = require('./lock.jpg');
+const ColoredArrowImg = require('./colored-arrow.jpg');
 
 export {
   XImg,
@@ -116,4 +132,20 @@ export {
   CloseImg,
   CipherImg,
   CipherReward,
+  LoadImage,
+  BoostImg2,
+  DimBoost,
+  CoinBoost,
+  PowerTap,
+  BatterImg,
+  BoostImg,
+  ModalCoinImg,
+  ModalPowerTapImg,
+  ModalBatteryImg,
+  dissabledCoinImg,
+  TonBgImg,
+  ColoredArrowImg,
+  ModalLockImg,
+  LockImg,
+  walletImg,
 };

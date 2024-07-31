@@ -45,6 +45,7 @@ const Footer: React.FC<Props> = props => {
   const [showAirDropScreen, setShowAirDropScreen] = useState(false);
   const [showFriendsScreen, setShowFriendsScreen] = useState(false);
   const [noBottomTab, setNoBottomTab] = useState(false);
+  const [showBoostView, setShowBoostView] = useState(false);
   const toggleState = () => {
     setPressed('exchange');
     console.log('--------');
@@ -66,6 +67,9 @@ const Footer: React.FC<Props> = props => {
                 setPressed('earn');
                 setShowEarnScreen(true);
               }}
+              setShowBoostView={setShowBoostView}
+              showBoostView={showBoostView}
+              closeBottomTab={setNoBottomTab}
             />
           )}
           {showEarnScreen && (
@@ -106,6 +110,7 @@ const Footer: React.FC<Props> = props => {
                       setShowAirDropScreen(false);
                       setShowFriendsScreen(false);
                       setShowMineScreen(false);
+                      setShowBoostView(false);
                     }}>
                     {pressed === 'exchange' ? (
                       <Image

@@ -1,15 +1,23 @@
 import React, {ReactNode} from 'react';
-import {View, StyleSheet, Text, Platform} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Platform,
+  ViewStyle,
+  StyleProp,
+  Dimensions,
+} from 'react-native';
 import {Shadow} from 'react-native-shadow-2';
 
 interface Props {
   children: ReactNode;
+  style?: StyleProp<ViewStyle>;
   // Define your props here
 }
 
 const Modal: React.FC<Props> = props => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, props.style]}>
       <Shadow
         distance={35}
         startColor={'rgb(101, 89, 0.1)'}
@@ -26,7 +34,7 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     height: '100%',
-    width: '100%',
+    width: Dimensions.get('window').width,
     justifyContent: 'center',
     alignItems: 'center',
     top: '25%',
@@ -39,19 +47,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9BA48',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    // top: '22.4%',
     top: '2.7%',
-    width: Platform.OS === 'android' ? 411 : 396,
+    width: '99.5%',
+    alignSelf: 'center',
+    position: 'absolute',
     // shadowColor: '#E9BA48',
     // shadowOffset: {width: 0, height: -16},
     // shadowOpacity: 0.5,
     // shadowRadius: 10,
-    alignSelf: 'center',
-    position: 'absolute',
+    // top: '22.4%',
   },
   view: {
     height: '98%',
-    width: Platform.OS === 'ios' ? 400 : 415,
+    width: Dimensions.get('window').width,
     backgroundColor: '#1D1F24',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,

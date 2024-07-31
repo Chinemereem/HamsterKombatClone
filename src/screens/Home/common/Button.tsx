@@ -12,7 +12,7 @@ import {
   GestureResponderEvent,
   TextStyle,
 } from 'react-native';
-import { Checked } from '../../../assets/images';
+import {Checked} from '../../../assets/images';
 
 interface Props {
   source?: ImageSourcePropType;
@@ -21,7 +21,7 @@ interface Props {
   leftChevronImg?: ImageSourcePropType;
   activeChevronImgSourceStyle?: StyleProp<ImageStyle>;
   leftChevronImgStyle?: StyleProp<ImageStyle>;
-  rewardAmount?: string;
+  rewardAmount?: string | number;
   coinImgTwoStyle?: StyleProp<ImageStyle>;
   chevronViewStyle?: StyleProp<ViewStyle>;
   taskImgSource?: StyleProp<ImageStyle>;
@@ -32,6 +32,11 @@ interface Props {
   onPress?: (event: GestureResponderEvent) => void;
   titleStle?: StyleProp<TextStyle>;
   passed?: boolean;
+  text?: string;
+  viewStyle?: StyleProp<ViewStyle>;
+  timeLeft?: string;
+  timeLeftViewStyle?: StyleProp<ViewStyle>;
+  disabled?: boolean;
   // Define your props here
 }
 
@@ -44,7 +49,8 @@ const BackgroundButton: React.FC<Props> = props => {
       onPressOut={() => {
         setPressed(false);
       }}
-      onPress={props.onPress}>
+      onPress={props.onPress}
+      disabled={props.disabled}>
       <Image source={props.source} style={props.taskImgSource} />
 
       <View style={props.alignedView}>
@@ -58,22 +64,37 @@ const BackgroundButton: React.FC<Props> = props => {
         </Text>
         <View style={props.viewDirection}>
           <Image source={props.coinImgTwo} style={props.coinImgTwoStyle} />
-          <Text style={[styles.title, props.titleStle]}>
-            {props.rewardAmount}
-          </Text>
+          <View style={{alignSelf: 'center', flexDirection: 'row'}}>
+            <Text style={[styles.title, props.titleStle]}>
+              {props.rewardAmount}
+            </Text>
+            <View style={props.viewStyle} />
+            <Text
+              style={[
+                styles.title,
+                {color: '#7E8186', fontSize: 12, marginLeft: 3},
+              ]}>
+              {props.text}
+            </Text>
+          </View>
         </View>
       </View>
       <View style={props.chevronViewStyle}>
+        <View style={props.timeLeftViewStyle}>
+          <Text style={{textAlign: 'center', color: 'white'}}>
+            {props.timeLeft}
+          </Text>
+        </View>
         {props.passed ? (
           <View>
-          <Image source={Checked} />
+            <Image source={Checked} />
           </View>
         ) : (
           <>
             {pressed ? (
               <Image
                 source={props.activeChevronImgSource}
-                style={props.activeChevronImgSourceStyle}
+                style={[props.activeChevronImgSourceStyle]}
               />
             ) : (
               <Image

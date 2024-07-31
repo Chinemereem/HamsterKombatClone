@@ -11,7 +11,6 @@ import {
   ScrollView,
   ImageBackground,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import {
   ActiveChevronImg,
@@ -56,16 +55,6 @@ interface Props {
   noBottomModal?: boolean;
   // Define your props here
 }
-const rewards = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
-const items = [
-  {id: 1, name: 'Item 1'},
-  {id: 2, name: 'Item 2'},
-  {id: 3, name: 'Item 3'},
-  {id: 4, name: 'Item 4'},
-  {id: 5, name: 'Item 5'},
-  {id: 6, name: 'Item 6'},
-  {id: 7, name: 'Item 7'},
-];
 const EarnScreen: React.FC<Props> = props => {
   // const screenHeight = Dimensions.get('window').height / 1.3;
 
@@ -314,6 +303,7 @@ const EarnScreen: React.FC<Props> = props => {
     //   setLoading(false);
     // }
   };
+  const isDissabled = !nextClaimTime ? false : true;
   return (
     <SafeAreaView style={[styles.container, props.style]}>
       {showToast && (
@@ -572,7 +562,7 @@ const EarnScreen: React.FC<Props> = props => {
                     backgroundColor: nextClaimTime ? '#444547' : '#5a5fff',
                   },
                 ]}
-                disabled={nextClaimTime}
+                disabled={isDissabled}
                 onPress={handleClaimed}>
                 {loading ? (
                   <ActivityIndicator />
