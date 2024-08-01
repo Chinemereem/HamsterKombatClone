@@ -12,8 +12,8 @@ export const TapText = ({x, y, removing, plusTap, cipherView, longPress,}) => {
 
   useEffect(() => {
     if (removing) {
-      opacity.value = withTiming(0, {duration: 500});
-      translateY.value = withTiming(-50, {duration: 500});
+      opacity.value = withTiming(0, {duration: 300});
+      translateY.value = withTiming(-100, {duration: 600});
     }
   }, [removing]);
 
@@ -51,7 +51,7 @@ export const TapText = ({x, y, removing, plusTap, cipherView, longPress,}) => {
 const styles = StyleSheet.create({
   animatedText: {
     color: 'white',
-    fontSize: 23,
+    fontSize: 28,
     fontWeight: '800',
     zIndex: 1,
     position: 'absolute',

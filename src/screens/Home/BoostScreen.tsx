@@ -55,7 +55,7 @@ const BoostScreen: React.FC<Props> = props => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setisloading] = useState(false);
   const {isTimerActive, setIsTimerActive, timeLeft, formatTime} = useTimer();
-  const [changeToast, setChangeToast] = useState('Recharging energy...');
+  const [changeToast, setChangeToast] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [check, setCheck] = useState(false);
   const [showMultiTapModal, setShowMultiTapModal] = useState(false);
@@ -64,6 +64,7 @@ const BoostScreen: React.FC<Props> = props => {
   const [showRechargeTapModal, setShowRechargeTapModal] = useState(false);
   const [level, setLevel] = useState(2);
   const [isBoost, setIsBoots] = useState(false);
+  const [isTap, setIsTap] = useState(false);
   const [tapLevel, setTapLevel] = useState(2);
 
   const saveBoostToLocalStorage = async (items: any) => {
@@ -131,7 +132,6 @@ const BoostScreen: React.FC<Props> = props => {
   const multitabnumber = Number(
     multitapIncrement?.toString().replace(/0+$/, ''),
   );
-  console.log(multitapIncrement, '=====');
   const revealViews = () => {
     Animated.loop(
       Animated.sequence([
@@ -153,24 +153,53 @@ const BoostScreen: React.FC<Props> = props => {
       ]),
     ).start();
   };
-  const handleMultiTapBtn = () => {
-    props.setNumberIncrement(props.numberIncrement + 1);
+  const handleMultiTapBtn = async () => {
+    revealViews();
+    setisloading(true);
+    try {
+      props.setNumberIncrement(props.numberIncrement + 1);
 
-    setTapLevel(tapLevel + 1);
+      setTapLevel(tapLevel + 1);
 
-    setMultiTapIncrement(multitapIncrement * 2);
+      setMultiTapIncrement(multitapIncrement * 2);
 
-    props.setCount(props.countBalance - multitapIncrement);
-    saveBoostToLocalStorage({
-      energy: props.energy,
-      tapLevel: tapLevel + 1,
-      multitapIncrement: multitapIncrement * 2,
-      numberIncrement: props.numberIncrement + 1,
-      level: level,
-      tapIncrement: tapIncrement,
-    });
+      props.setCount(props.countBalance - multitapIncrement);
+      await saveBoostToLocalStorage({
+        energy: props.energy,
+        tapLevel: tapLevel + 1,
+        multitapIncrement: multitapIncrement * 2,
+        numberIncrement: props.numberIncrement + 1,
+        level: level,
+        tapIncrement: tapIncrement,
+      });
+      setIsTap(true)
+      setShowToast(true);
+      setTimeout(() => {
+        setisloading(false);
+        setShowMultiTapModal(false);
+        props.closeBottomTab(false);
+      }, 1000);
+    } catch {}
+  };
+  const handleSaveProps = async () => {
+    try {
+      await saveBoostToLocalStorage({
+        energy: props.energy + 500,
+        tapIncrement: tapIncrement * 2,
+        level: level + 1,
+        multitapIncrement: multitapIncrement,
+        tapLevel: tapLevel,
+        numberIncrement: props.numberIncrement,
+      });
+      await saveToLocalStorage({
+        count: props.countBalance - tapIncrement,
+        task: props.task,
+        claimed: props.claimed,
+      });
+    } catch {}
   };
   const handleEnergyBtn = async () => {
+    revealViews();
     setisloading(true);
     try {
       setLevel(level + 1);
@@ -179,29 +208,15 @@ const BoostScreen: React.FC<Props> = props => {
       // }
       props.setCount(props.countBalance - tapIncrement);
       setIsBoots(true);
-      props.setEnergy(props.energy + 500);
-
-      await saveBoostToLocalStorage({
-        energy: props.energy + 500,
-        tapIncrement: tapIncrement * 2,
-        level: level + 1,
-        multitapIncrement: multitapIncrement,
-        tapLevel: tapLevel,
-      });
-      await saveToLocalStorage({
-        count: props.countBalance - tapIncrement,
-        task: props.task,
-        claimed: props.claimed,
-      });
       setShowToast(true);
+      props.setEnergy(props.energy + 500);
+      await handleSaveProps();
       setTimeout(() => {
+        setisloading(false);
         setShowRechargeTapModal(false);
         props.closeBottomTab(false);
       }, 1000);
-    } catch {
-    } finally {
-      setisloading(false);
-    }
+    } catch {}
   };
 
   return (
@@ -258,6 +273,27 @@ const BoostScreen: React.FC<Props> = props => {
           )}
           {/* <Image source={Check} style={{alignSelf: 'center'}} /> */}
           {isBoost ? (
+            <Text
+              style={{
+                fontSize: 10,
+                color: 'white',
+                marginLeft: 5,
+                alignSelf: 'center',
+              }}>
+              {`Boost is yours! Energy Limit${level} lvl`}
+            </Text>
+          ) : (
+            <Text
+              style={{
+                fontSize: 10,
+                color: 'white',
+                marginLeft: 5,
+                alignSelf: 'center',
+              }}>
+              {changeToast}
+            </Text>
+          )}
+          {isTap ? (
             <Text
               style={{
                 fontSize: 10,
@@ -758,9 +794,6 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   chevStyle: {
-    width: '5%',
-    height: 95,
-    alignItems: 'center',
     alignSelf: 'center',
     justifyContent: 'center',
   },

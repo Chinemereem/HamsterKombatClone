@@ -84,7 +84,14 @@ const Footer: React.FC<Props> = props => {
             />
           )}
           {showAirDropScreen && (
-            <ExchangeScreen closeScreen={setShowAirDropScreen} />
+            <ExchangeScreen
+              closeScreen={() => {
+                setPressed('exchange');
+                setShowHomeScreen;
+                setShowAirDropScreen(false);
+              }}
+              closeBottomTab={setNoBottomTab}
+            />
           )}
           {showFriendsScreen && (
             <FriendsScreen closeScreen={setShowFriendsScreen} />
@@ -235,7 +242,7 @@ const Footer: React.FC<Props> = props => {
                         style={{width: 27, height: 27}}
                       />
                     )}
-                    <Text style={styles.footerText}>Exchange</Text>
+                    <Text style={styles.footerText}>Airdrop</Text>
                   </Pressable>
                 </View>
               </View>

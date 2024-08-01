@@ -37,6 +37,8 @@ interface Props {
   timeLeft?: string;
   timeLeftViewStyle?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  textStyle?: StyleProp<TextStyle>;
+
   // Define your props here
 }
 
@@ -55,11 +57,14 @@ const BackgroundButton: React.FC<Props> = props => {
 
       <View style={props.alignedView}>
         <Text
-          style={{
-            color: '#E8E9EC',
+          style={[
+            {
+              color: '#E8E9EC',
 
-            fontWeight: '700',
-          }}>
+              fontWeight: '700',
+            },
+            props.textStyle,
+          ]}>
           {props.taskTitle}
         </Text>
         <View style={props.viewDirection}>

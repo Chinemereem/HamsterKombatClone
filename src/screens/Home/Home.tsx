@@ -52,7 +52,7 @@ interface Props {
 }
 
 const Home: React.FC<Props> = props => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(1);
   const [profit, setProfit] = useState(0);
   const [newDayReward, setNewDayReward] = useState(false);
   const [level, setLevel] = useState('Bronze');
@@ -79,13 +79,14 @@ const Home: React.FC<Props> = props => {
   const longPressscale = useSharedValue(1);
 
   // const opacity = useSharedValue(0);
-  const myFunction = () => {
+  const myFunction = async () => {
     setCount(count + numberIncrement);
-    saveToLocalStorage({
+    await saveToLocalStorage({
       count: count + numberIncrement,
       task: task,
       claimed: claimed,
     });
+    
     if (powerCount <= 1) {
       return;
     } else {
@@ -115,11 +116,11 @@ const Home: React.FC<Props> = props => {
           return prevNumber;
         }
       });
-    }, 1000);
+    }, energy);
 
     // Cleanup the interval on component unmount
     return () => clearInterval(interval);
-  }, [powerCount]);
+  }, [powerCount, energy]);
   useEffect(() => {
     const fetchNextClaimTime = async () => {
       const nextTime = await getNextClaimTime();
@@ -134,7 +135,7 @@ const Home: React.FC<Props> = props => {
     return `${hours}:${minutes}`;
   };
   const [nextClaimTime, setNextClaimTime] = useState(null);
-
+  console.log(count, '=====', numberIncrement);
   const timeUntilNextClaim = new Date(nextClaimTime - new Date());
   const formattedTime = formatTime(timeUntilNextClaim);
   const getTaps = event => {
@@ -143,8 +144,9 @@ const Home: React.FC<Props> = props => {
     // Set a timer to remove the tap after 1 second
     setTimeout(() => {
       removeTap(newTap.id);
-    }, 300);
+    }, 100);
   };
+
   const removeTap = id => {
     setTaps(prevTaps =>
       prevTaps.map(tap => (tap.id === id ? {...tap, removing: true} : tap)),
@@ -162,7 +164,7 @@ const Home: React.FC<Props> = props => {
     // Set a timer to remove the tap after 1 second
     setTimeout(() => {
       removePressed(newTap.id);
-    }, 300);
+    }, 100);
   };
   const removePressed = id => {
     setPressedGess(prevTaps =>
@@ -178,11 +180,20 @@ const Home: React.FC<Props> = props => {
   const fetchBoost = async () => {
     try {
       const savedBoost = await AsyncStorage.getItem('ceo-boost');
-      const number = JSON.parse(savedBoost);
-      if (number) {
-        setEnergy(number.energy);
-        setPowerCount(number.energy);
-        setNumberIncrement(number.numberIncrement);
+      const parsedData = JSON.parse(savedBoost);
+      const number = [parsedData];
+      if (Array.isArray(number)) {
+        const s = number.some(i => {
+          return i === null;
+        });
+
+        if (!s) {
+          setEnergy(number[0].energy);
+          setPowerCount(number[0].energy);
+          setNumberIncrement(number[0].numberIncrement);
+        }
+      } else {
+        console.log('num is not an array');
       }
       // setTask(number.task);
       // setClaimed(number.claimed);
@@ -191,12 +202,23 @@ const Home: React.FC<Props> = props => {
   useEffect(() => {
     const fetchCoins = async () => {
       try {
-        const savedCoinCoutn = await AsyncStorage.getItem('ceo-coins');
-        const number = JSON.parse(savedCoinCoutn);
-        if (number) {
-          setCount(number.count);
-          setTask(number.task);
-          setClaimed(number.claimed);
+        const savedCoinCount = await AsyncStorage.getItem('ceo-coins');
+        const parsedData = JSON.parse(savedCoinCount);
+        const num = [parsedData];
+
+        if (Array.isArray(num)) {
+          const s = num.some(i => {
+            return i === null;
+          });
+
+          if (!s) {
+            setCount(num[0].count);
+            setCount(num[0].count);
+            setTask(num[0].task);
+            setClaimed(num[0].claimed);
+          }
+        } else {
+          console.log('num is not an array');
         }
       } catch (err) {}
     };
@@ -573,7 +595,7 @@ const Home: React.FC<Props> = props => {
                           fontSize: 20,
                           fontWeight: '600',
                         }}>
-                        {count.toLocaleString()}
+                        {count?.toLocaleString()}
                       </Text>
                     </View>
                   </View>
@@ -820,18 +842,11 @@ const styles = StyleSheet.create({
     top: 20,
   },
   shadowBlock: {
-    // height: '94%',
-    // width: '100%',
-    // alignItems: 'center',
-    position: 'absolute',
     height: '100%',
     width: Dimensions.get('window').width,
     justifyContent: 'center',
     alignItems: 'center',
-    top: '20%',
-    bottom: 0,
-    right: 0,
-    left: 0,
+    bottom: 10,
   },
   view: {
     // height: '97%',
