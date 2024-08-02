@@ -11,6 +11,7 @@ import {
   PressedHams,
   SelectedAirdropImg,
   SelectedFriendsImg,
+  userImg,
 } from '../assets/images';
 import EarnScreen from '../screens/Home/EarnScreen';
 import ExchangeScreen from '../screens/Home/Exchange';
@@ -19,6 +20,7 @@ import Onboard from '../screens/onboarding';
 import Home from '../screens/Home/Home';
 import Mine from '../screens/Home/Mine';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Profile from '../screens/Home/Profile';
 
 interface Props {
   // Define your props here
@@ -53,6 +55,7 @@ const Footer: React.FC<Props> = props => {
     // setShowHomeScreen(true);
   };
   console.log(pressed);
+  const [showProfile, setShowProfile] = useState(false);
   return (
     <>
       {showWelcome && ininialScreen ? (
@@ -61,7 +64,8 @@ const Footer: React.FC<Props> = props => {
         <>
           {pressed === 'exchange' && (
             <Home
-              closeScreen={setShowHomeScreen}
+              closeScreen={setPressed}
+              closeHome={setShowProfile}
               toggleScreen={() => {
                 setShowHomeScreen(false);
                 setPressed('earn');
@@ -72,6 +76,13 @@ const Footer: React.FC<Props> = props => {
               closeBottomTab={setNoBottomTab}
             />
           )}
+          {showProfile ? (
+            <Profile
+              goBack={setPressed}
+              closeScreen={setShowProfile}
+              source={userImg}
+            />
+          ) : null}
           {showEarnScreen && (
             <EarnScreen
               closeScreen={() => {
@@ -118,6 +129,7 @@ const Footer: React.FC<Props> = props => {
                       setShowFriendsScreen(false);
                       setShowMineScreen(false);
                       setShowBoostView(false);
+                      setShowProfile(false);
                     }}>
                     {pressed === 'exchange' ? (
                       <Image
@@ -146,6 +158,7 @@ const Footer: React.FC<Props> = props => {
                       setShowAirDropScreen(false);
                       setShowFriendsScreen(false);
                       setShowMineScreen(true);
+                      setShowProfile(false);
                     }}>
                     {pressed === 'mine' ? (
                       <Image
@@ -174,6 +187,7 @@ const Footer: React.FC<Props> = props => {
                       setShowEarnScreen(false);
                       setShowAirDropScreen(false);
                       setShowMineScreen(false);
+                      setShowProfile(false);
                     }}>
                     {pressed === 'friends' ? (
                       <Image
@@ -202,6 +216,7 @@ const Footer: React.FC<Props> = props => {
                       setShowAirDropScreen(false);
                       setShowFriendsScreen(false);
                       setShowMineScreen(false);
+                      setShowProfile(false);
                     }}>
                     {pressed === 'earn' ? (
                       <Image
@@ -230,6 +245,7 @@ const Footer: React.FC<Props> = props => {
                       setShowEarnScreen(false);
                       setShowMineScreen(false);
                       setShowFriendsScreen(false);
+                      setShowProfile(false);
                     }}>
                     {pressed === 'airdrop' ? (
                       <Image

@@ -72,6 +72,29 @@ const walletImg = require('./wallet.jpg');
 const ModalLockImg = require('./modal-lock.jpg');
 const LockImg = require('./lock.jpg');
 const ColoredArrowImg = require('./colored-arrow.jpg');
+const userImg = require('./user-img.jpg');
+const Skin1 = require('./skin1.jpg');
+const Skin2 = require('./skin2.jpg');
+const Skin3 = require('./skin-3.jpg');
+const Skin4 = require('./skin-4.jpg');
+const Skin5 = require('./skin-5.jpg');
+const Skin6 = require('./skin-6.jpg');
+const Skin7 = require('./skin-7.jpg');
+const Skin8 = require('./skin-8.jpg');
+const Skin9 = require('./skin-9.jpg');
+const Skin0 = require('./skin-0.jpg');
+const Skin11 = require('./skin-11.jpg');
+const Skin12 = require('./skin-12.jpg');
+const Skin13 = require('./skin-13.jpg');
+const Skin14 = require('./skin-14.jpg');
+
+const Skin15 = require('./skin-15.jpg');
+const Skin16 = require('./skin-16.jpg');
+const BlueBack = require('./blue-back.png');
+const Skin17 = require('./skin-17.jpg');
+const DefaultSkin = require('./default-skin.jpg');
+const ProfileArrowLeft = require('./profile-arrow-left.jpeg');
+const ProfileArrowRight = require('./profile-arrow-right.jpeg');
 
 export {
   XImg,
@@ -148,4 +171,26 @@ export {
   ModalLockImg,
   LockImg,
   walletImg,
+  userImg,
+  Skin1,
+  Skin2,
+  Skin3,
+  Skin4,
+  Skin5,
+  Skin6,
+  Skin7,
+  Skin8,
+  Skin9,
+  Skin0,
+  Skin11,
+  Skin12,
+  Skin13,
+  Skin14,
+  Skin15,
+  Skin16,
+  Skin17,
+  BlueBack,
+  DefaultSkin,
+  ProfileArrowLeft,
+  ProfileArrowRight,
 };

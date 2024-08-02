@@ -12,8 +12,8 @@ export const TapText = ({x, y, removing, plusTap, cipherView, longPress,}) => {
 
   useEffect(() => {
     if (removing) {
-      opacity.value = withTiming(0, {duration: 300});
-      translateY.value = withTiming(-100, {duration: 600});
+      opacity.value = withTiming(0, {duration: 600});
+      translateY.value = withTiming(-100, {duration: 400});
     }
   }, [removing]);
 

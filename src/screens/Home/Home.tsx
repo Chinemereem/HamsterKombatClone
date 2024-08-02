@@ -25,6 +25,7 @@ import {
   cypherImage,
   info,
   rewardImage,
+  userImg,
 } from '../../assets/images';
 import ProgressView from './ProgressView';
 import Animated, {
@@ -41,6 +42,7 @@ import {TapText} from './common/Texts';
 import {getNextClaimTime} from './functions';
 import BoostScreen from './BoostScreen';
 import {Shadow} from 'react-native-shadow-2';
+import Profile from './Profile';
 interface Props {
   style?: ViewStyle;
   closeScreen: any;
@@ -48,6 +50,7 @@ interface Props {
   setShowBoostView: React.Dispatch<React.SetStateAction<boolean>>;
   showBoostView: boolean;
   closeBottomTab: SetStateAction<any>;
+  closeHome: React.Dispatch<React.SetStateAction<boolean>>;
   // Define your props here
 }
 
@@ -77,7 +80,7 @@ const Home: React.FC<Props> = props => {
   const [comboClaimed, setComboClaimed] = useState(false);
   const translateY = useSharedValue(0);
   const longPressscale = useSharedValue(1);
-
+  const [showProfile, setShowProfile] = useState(false);
   // const opacity = useSharedValue(0);
   const myFunction = async () => {
     setCount(count + numberIncrement);
@@ -86,7 +89,7 @@ const Home: React.FC<Props> = props => {
       task: task,
       claimed: claimed,
     });
-    
+
     if (powerCount <= 1) {
       return;
     } else {
@@ -140,11 +143,14 @@ const Home: React.FC<Props> = props => {
   const formattedTime = formatTime(timeUntilNextClaim);
   const getTaps = event => {
     const newTap = {x: event.x, y: event.y, id: Date.now() + Math.random()};
-    setTaps(prevTaps => [...prevTaps, newTap]);
-    // Set a timer to remove the tap after 1 second
-    setTimeout(() => {
+   
+      setTaps(prevTaps => [...prevTaps, newTap]);
+   
       removeTap(newTap.id);
-    }, 100);
+    // Set a timer to remove the tap after 1 second
+    // setTimeout(() => {
+    //   removeTap(newTap.id);
+    // }, 100);
   };
 
   const removeTap = id => {
@@ -351,12 +357,17 @@ const Home: React.FC<Props> = props => {
       {!props.showBoostView ? (
         <>
           <View style={{left: 20}}>
-            <View style={{flexDirection: 'row', width: '30%'}}>
-              <Image source={HamsterUserIcon} style={{width: 40, height: 40}} />
+            <Pressable
+              style={{flexDirection: 'row', width: '30%'}}
+              onPress={() => {
+                props.closeScreen('');
+                props.closeHome(true);
+              }}>
+              <Image source={userImg} style={{width: 40, height: 40}} />
               <View style={{alignSelf: 'center'}}>
                 <Text style={styles.title}>Anie(CEO)</Text>
               </View>
-            </View>
+            </Pressable>
             <View
               style={{
                 flexDirection: 'row',
@@ -735,9 +746,7 @@ const styles = StyleSheet.create({
     height: 90,
     backgroundColor: '#5b9362',
     borderTopWidth: 1,
-
     borderWidth: 0.6,
-
     borderColor: '#5B9362',
     top: 20,
     borderRadius: 10,
@@ -759,17 +768,6 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 0},
   },
   shadow: {
-    // height: '7%',
-    // backgroundColor: '#E9BA48',
-    // borderTopLeftRadius: 20,
-    // borderTopRightRadius: 20,
-    // top: '22.4%',
-    // width: '98%',
-    // shadowColor: '#E9BA48',
-    // shadowOffset: {width: 0, height: -16},
-    // shadowOpacity: 0.5,
-    // shadowRadius: 10,
-    // left: 2.2,
     height: '20%',
     backgroundColor: '#E9BA48',
     borderTopLeftRadius: 25,
@@ -778,19 +776,6 @@ const styles = StyleSheet.create({
     width: '99.5%',
     alignSelf: 'center',
     position: 'absolute',
-    // height: '86.6%',
-    // backgroundColor: '#E9BA48',
-    // borderTopLeftRadius: 23,
-    // borderTopRightRadius: 23,
-    // // top: '22.4%',
-    // elevation: 10,
-    // width: '98.8%',
-    // shadowColor: '#E9BA48',
-    // shadowOffset: {width: 0, height: -16},
-    // shadowOpacity: 0.2,
-    // shadowRadius: 10,
-    // top: -1.3,
-    // position: 'absolute',
   },
   box: {
     width: 5,
@@ -811,13 +796,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
   },
   boost: {
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
-    // marginTop: 40,
-    // marginBottom: 10,
-    // width: '90%',
-    // backgroundColor:'red',
-
     width: '90%',
     height: 45,
     flexDirection: 'row',
@@ -849,25 +827,12 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
   view: {
-    // height: '97%',
-    // backgroundColor: '#1D1F24',
-    // borderTopLeftRadius: 30,
-    // borderTopRightRadius: 30,
-    // top: '3%',
-
-    // height: '90%',
-    // width: '100%',
-    // backgroundColor: '#1D1F24',
-    // borderTopLeftRadius: 30,
-    // borderTopRightRadius: 30,
-    // alignItems: 'center',
     height: '98%',
     width: Dimensions.get('window').width,
     backgroundColor: '#1D1F24',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     top: '3%',
-
     paddingVertical: 20,
   },
 
