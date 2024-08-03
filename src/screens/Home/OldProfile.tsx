@@ -18,7 +18,7 @@ import {
   ProfileArrowRight,
   downChevron,
 } from '../../assets/images';
-import {SkinImageData} from '../../assets/images/imageArray';
+import {SkinImageData} from '../../assets/images/array/imageArray';
 
 interface Props {
   // Define your props here

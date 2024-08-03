@@ -9,10 +9,17 @@ import {
   SafeAreaView,
   ImageSourcePropType,
   FlatList,
-  ScrollView,
 } from 'react-native';
-import {BlueBack, More, downChevron} from '../../assets/images';
-import {SkinImageData} from '../../assets/images/imageArray';
+import {
+  BlueBack,
+  Btnlock,
+  More,
+  ProfileClock,
+  ProfileLock,
+  dissabledCoinImg,
+  downChevron,
+} from '../../assets/images';
+import {SkinImageData} from '../../assets/imageArray/imageArray';
 
 interface Props {
   // Define your props here
@@ -27,9 +34,7 @@ const options = [
 
 const {width, height} = Dimensions.get('screen');
 const Profile: React.FC<Props> = props => {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState('all');
-  const flatListRef = useRef();
   const [itemIndex, setIndex] = useState(0);
 
   const handleOptionSelected = () => {
@@ -43,7 +48,9 @@ const Profile: React.FC<Props> = props => {
     return [];
   };
   const imageData = handleOptionSelected();
-  const [image, setImage] = useState(imageData[0]?.imageUrl);
+  const [image, setImage] = useState(imageData?.[0]?.imageUrl);
+  const [currentTitle, setCurrentTitle] = useState(imageData?.[0]?.name);
+  const [price, setPrice] = useState(imageData?.[0]?.price);
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.left}>
@@ -74,6 +81,9 @@ const Profile: React.FC<Props> = props => {
         </View>
       </View>
       <View style={styles.bg} />
+      <View style={styles.aBlock}>
+        <Text style={styles.textx}>Achievements</Text>
+      </View>
       <View style={styles.row}>
         <Text style={styles.rowText}>Skin</Text>
         <View style={styles.justify}>
@@ -104,9 +114,23 @@ const Profile: React.FC<Props> = props => {
               resizeMode="contain"
             />
             <View style={styles.labelBg}>
-              <Text style={styles.justText}>Default</Text>
-              <Text style={styles.league}>Your league's default skin</Text>
-              <Text style={styles.blockText}>Purchased</Text>
+              <Text style={styles.justText}>{currentTitle}</Text>
+              <Text style={styles.league}>{currentTitle}'s default skin</Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignSelf: 'center',
+                  marginBottom: 10,
+                  marginTop: 10,
+                }}>
+                <Image
+                  source={dissabledCoinImg}
+                  style={{width: 20, height: 20}}
+                />
+                <Text style={styles.blockText}>
+                  {Number(price)?.toLocaleString()}
+                </Text>
+              </View>
               <View style={styles.flex}>
                 <Pressable
                   style={[
@@ -137,7 +161,11 @@ const Profile: React.FC<Props> = props => {
                   </>
                 ) : (
                    )} */}
-                  <Text style={styles.textx}>Choose</Text>
+                  <Text style={styles.textx}>Unlock</Text>
+                  <Image
+                    source={Btnlock}
+                    style={{width: 22, height: 22, top: 2}}
+                  />
                 </Pressable>
               </View>
             </View>
@@ -158,14 +186,36 @@ const Profile: React.FC<Props> = props => {
                   onPress={() => {
                     setImage(item.imageUrl);
                     setIndex(index);
+                    setCurrentTitle(item.name);
+                    setPrice(item.price);
                   }}
                   key={index}>
-                  <Image
-                    source={item.imageUrl}
-                    style={{width: 40, height: 90, alignSelf: 'center',}}
-                    resizeMode="contain"
-                  />
-                  <Text style={{fontSize:10, textAlign:'center', color:'white'}}>{item.name}</Text>
+                  <View style={{flexDirection: 'row'}}>
+                    <Image
+                      source={item.imageUrl}
+                      style={{width: 40, height: 90, alignSelf: 'center'}}
+                      resizeMode="contain"
+                    />
+                    <View style={{marginTop: 10}}>
+                      <Image
+                        source={ProfileClock}
+                        style={{width: 20, height: 20, marginBottom: 10}}
+                      />
+                      <Image
+                        source={ProfileLock}
+                        style={{width: 20, height: 20}}
+                      />
+                    </View>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      textAlign: 'center',
+                      color: 'white',
+                      marginBottom: 10,
+                    }}>
+                    {item.name}
+                  </Text>
                 </Pressable>
               );
             }}
@@ -257,9 +307,8 @@ const styles = StyleSheet.create({
   labelBg: {
     backgroundColor: '#272A2F',
     borderRadius: 10,
-    height: '10%',
-    width: '40%',
-    alignSelf: 'center',
+    height: '27%',
+    width: '90%',
   },
   headerView: {
     flexDirection: 'row',
@@ -319,10 +368,10 @@ const styles = StyleSheet.create({
   blockText: {
     color: '#7FB185',
     fontWeight: '600',
-    marginTop: 20,
+
     textAlign: 'center',
   },
-  flex: {height: '50%', justifyContent: 'flex-end'},
+  flex: {justifyContent: 'flex-end'},
   align: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -337,6 +386,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   img: {width: 30, height: 30},
+  aBlock: {
+    height: '20%',
+    backgroundColor: '#272A2F',
+    width: '100%',
+    borderRadius: 10,
+    marginVertical: 15,
+    padding:10
+  },
 });
 
 export default Profile;
